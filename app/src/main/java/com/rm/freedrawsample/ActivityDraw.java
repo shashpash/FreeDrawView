@@ -19,6 +19,7 @@ import com.rm.freedrawview.FreeDrawSerializableState;
 import com.rm.freedrawview.FreeDrawView;
 import com.rm.freedrawview.PathDrawnListener;
 import com.rm.freedrawview.PathRedoUndoCountChangeListener;
+import com.rm.freedrawview.ResizeBehaviour;
 
 public class ActivityDraw extends AppCompatActivity
         implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,
@@ -62,6 +63,7 @@ public class ActivityDraw extends AppCompatActivity
         mFreeDrawView = (FreeDrawView) findViewById(R.id.free_draw_view);
         mFreeDrawView.setOnPathDrawnListener(this);
         mFreeDrawView.setPathRedoUndoCountChangeListener(this);
+        mFreeDrawView.setResizeBehaviour(ResizeBehaviour.FIT_XY);
 
         mSideView = findViewById(R.id.side_view);
         mBtnRandomColor = (Button) findViewById(R.id.btn_color);

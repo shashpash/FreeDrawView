@@ -14,6 +14,7 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -29,26 +30,20 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     private static final float DEFAULT_STROKE_WIDTH = 4;
     private static final int DEFAULT_COLOR = Color.BLACK;
     private static final int DEFAULT_ALPHA = 255;
-
+    //    float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE, minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
     private Paint mCurrentPaint;
     private Path mCurrentPath;
-
     private ResizeBehaviour mResizeBehaviour;
-
     private ArrayList<Point> mPoints = new ArrayList<>();
     private ArrayList<HistoryPath> mPaths = new ArrayList<>();
     private ArrayList<HistoryPath> mCanceledPaths = new ArrayList<>();
-
     @ColorInt
     private int mPaintColor = DEFAULT_COLOR;
     @IntRange(from = 0, to = 255)
     private int mPaintAlpha = DEFAULT_ALPHA;
-
     private int mLastDimensionW = -1;
     private int mLastDimensionH = -1;
-
     private boolean mFinishPath = false;
-
     private PathDrawnListener mPathDrawnListener;
     private PathRedoUndoCountChangeListener mPathRedoUndoCountChangeListener;
 
@@ -130,6 +125,14 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     }
 
     /**
+     * Get the current paint color without it's alpha
+     */
+    @ColorInt
+    public int getPaintColor() {
+        return mPaintColor;
+    }
+
+    /**
      * Set the paint color
      *
      * @param color The now color to be applied to the
@@ -145,21 +148,12 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     }
 
     /**
-     * Get the current paint color without it's alpha
-     */
-    @ColorInt
-    public int getPaintColor() {
-        return mPaintColor;
-    }
-
-    /**
      * Get the current color with the current alpha
      */
     @ColorInt
     public int getPaintColorWithAlpha() {
         return mCurrentPaint.getColor();
     }
-
 
     /**
      * Set the paint width in px
@@ -204,6 +198,13 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         }
     }
 
+    /**
+     * Get the current paint alpha
+     */
+    @IntRange(from = 0, to = 255)
+    public int getPaintAlpha() {
+        return mPaintAlpha;
+    }
 
     /**
      * Set the paint opacity, must be between 0 and 1
@@ -220,13 +221,11 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     }
 
     /**
-     * Get the current paint alpha
+     * Get the current behaviour on view resize
      */
-    @IntRange(from = 0, to = 255)
-    public int getPaintAlpha() {
-        return mPaintAlpha;
+    public ResizeBehaviour getResizeBehaviour() {
+        return mResizeBehaviour;
     }
-
 
     /**
      * Set what to do when the view is resized (on rotation if its dimensions are not fixed)
@@ -235,14 +234,6 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     public void setResizeBehaviour(ResizeBehaviour newBehaviour) {
         mResizeBehaviour = newBehaviour;
     }
-
-    /**
-     * Get the current behaviour on view resize
-     */
-    public ResizeBehaviour getResizeBehaviour() {
-        return mResizeBehaviour;
-    }
-
 
     /**
      * Cancel the last drawn segment
@@ -465,7 +456,6 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         new TakeScreenShotAsyncTask(listener).execute();
     }
 
-
     // Internal methods
     private void notifyPathStart() {
         if (mPathDrawnListener != null) {
@@ -627,11 +617,12 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
+        Log.e(TAG, "onSizeChanged: " + w + " " + h + " " + oldw + " " + oldh);
         float xMultiplyFactor = 1;
         float yMultiplyFactor = 1;
 
 
+        Log.e(TAG, "DIM: " + mLastDimensionW + " " + mLastDimensionH);
         if (mLastDimensionW == -1) {
             mLastDimensionW = w;
         }
@@ -640,29 +631,111 @@ public class FreeDrawView extends View implements View.OnTouchListener {
             mLastDimensionH = h;
         }
 
-        if (w >= 0 && w != oldw && w != mLastDimensionW) {
-            xMultiplyFactor = (float) w / mLastDimensionW;
-            mLastDimensionW = w;
+//        if (w < mLastDimensionW ) {
+//            if (w >= 0 && w != oldw) {
+//                yMultiplyFactor = xMultiplyFactor = (float) w / mLastDimensionW / 2;
+//            }
+//        }
+//        if (h < mLastDimensionH) {
+//            if (h >= 0 && h != oldh) {
+//                xMultiplyFactor = yMultiplyFactor = (float) h / mLastDimensionH / 2;
+//            }
+//        }
+        int xCenter = 0;
+        int yCenter = 0;
+//        minX += 6;
+//        minY +=6;
+//        searchMinMaxXY();
+//        if ((maxX - minX) > w || (maxY - minY) > h) {
+        if (w != mLastDimensionW) {
+            xMultiplyFactor = (float) w / (mLastDimensionW);
         }
 
-        if (h >= 0 && h != oldh && h != mLastDimensionH) {
-            yMultiplyFactor = (float) h / mLastDimensionH;
-            mLastDimensionH = h;
+        if (h != (mLastDimensionH)) {
+            yMultiplyFactor = (float) h / (mLastDimensionH);
         }
 
-        multiplyPathsAndPoints(xMultiplyFactor, yMultiplyFactor);
+        yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? xMultiplyFactor : yMultiplyFactor;
+
+//            if (w < mLastDimensionH || h < mLastDimensionH)
+//                yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? yMultiplyFactor : xMultiplyFactor;
+//            else
+//                yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? xMultiplyFactor : yMultiplyFactor;
+
+        if (mLastDimensionW < w) {
+            xCenter = (w - mLastDimensionW) / 2;
+        }
+
+        if (mLastDimensionH < h) {
+            yCenter = (h - mLastDimensionH) / 2;
+        } /*else {
+            yCenter = (mLastDimensionH - h) / 2;
+        }
+*/
+//        }
+
+
+        mLastDimensionW = w;
+        mLastDimensionH = h;
+
+        multiplyPathsAndPoints(xMultiplyFactor, yMultiplyFactor, xCenter, yCenter);
     }
+
+//    private void searchMinMaxXY() {
+//
+//        for (HistoryPath historyPath : mPaths) {
+//            if (historyPath.isPoint()) {
+//                if (historyPath.getOriginY() > maxY) {
+//                    maxY = historyPath.getOriginY();
+//                }
+//
+//                if (historyPath.getOriginY() < minY) {
+//                    minY = historyPath.getOriginY();
+//                }
+//
+//                if (historyPath.getOriginX() > maxX) {
+//                    maxX = historyPath.getOriginX();
+//                }
+//
+//                if (historyPath.getOriginX() < minX) {
+//                    minX = historyPath.getOriginX();
+//                }
+//            } else {
+//                for (Point point : historyPath.getPoints()) {
+//                    if (point.y > maxY) {
+//                        maxY = point.y;
+//                    }
+//
+//                    if (point.y < minY) {
+//                        minY = point.y;
+//                    }
+//
+//                    if (point.x > maxX) {
+//                        maxX = point.x;
+//                    }
+//
+//                    if (point.x < minX) {
+//                        minX = point.x;
+//                    }
+//                }
+//            }
+//        }
+//
+//        Log.e(TAG, "searchMinMaxXY: " + (maxX - minX) + " " + (maxY - minY));
+//    }
 
     // Translate all the paths, used every time that this view size is changed
     @SuppressWarnings("SuspiciousNameCombination")
-    private void multiplyPathsAndPoints(float xMultiplyFactor, float yMultiplyFactor) {
-
+    private void multiplyPathsAndPoints(float xMultiplyFactor, float yMultiplyFactor, int xCenter, int yCenter) {
+        Log.e(TAG, "multiplyPathsAndPoints: " + xMultiplyFactor + " " + yMultiplyFactor);
         // If both factors == 1 or <= 0 or no paths/points to apply things, just return
-        if ((xMultiplyFactor == 1 && yMultiplyFactor == 1)
-                || (xMultiplyFactor <= 0 || yMultiplyFactor <= 0) ||
+        if (/*(xMultiplyFactor == 1 && yMultiplyFactor == 1)
+                ||*/ (xMultiplyFactor <= 0 || yMultiplyFactor <= 0) ||
                 (mPaths.size() == 0 && mCanceledPaths.size() == 0 && mPoints.size() == 0)) {
             return;
         }
+
+        Log.e("SHASHPASH", "multiplyPathsAndPoints: " + xCenter + " " + yCenter);
 
         if (mResizeBehaviour == ResizeBehaviour.CLEAR) {// If clear, clear all and return
             mPaths = new ArrayList<>();
@@ -671,18 +744,35 @@ public class FreeDrawView extends View implements View.OnTouchListener {
             return;
         } else if (mResizeBehaviour == ResizeBehaviour.CROP) {
             xMultiplyFactor = yMultiplyFactor = 1;
-        }
+        } /*else if (mResizeBehaviour == ResizeBehaviour.SAVE_AR) {
+            xMultiplyFactor /= 1.2;
+            yMultiplyFactor /= 1.2;
+//            if (xMultiplyFactor > yMultiplyFactor) {
+//                float ar = xMultiplyFactor / yMultiplyFactor;
+//                yMultiplyFactor = mCurrentPaint.;
+//                xMultiplyFactor = yMultiplyFactor / ar;
+//            } else {
+//                float ar = yMultiplyFactor / xMultiplyFactor;
+//                xMultiplyFactor = 1;
+//                yMultiplyFactor = xMultiplyFactor / ar;
+//            }
+        }*/
 
         // Adapt drawn paths
         for (HistoryPath historyPath : mPaths) {
 
             if (historyPath.isPoint()) {
-                historyPath.setOriginX(historyPath.getOriginX() * xMultiplyFactor);
-                historyPath.setOriginY(historyPath.getOriginY() * yMultiplyFactor);
+                historyPath.setOriginX(historyPath.getOriginX() * xMultiplyFactor + xCenter);
+                historyPath.setOriginY(historyPath.getOriginY() * yMultiplyFactor + yCenter);
+                Log.e(TAG, "origin: " + historyPath.getOriginX() + " " + historyPath.getOriginY());
             } else {
                 for (Point point : historyPath.getPoints()) {
+                    Log.e(TAG, "points: " + point.x + " " + point.y);
                     point.x *= xMultiplyFactor;
+                    point.x += xCenter;
                     point.y *= yMultiplyFactor;
+                    point.y += yCenter;
+                    Log.e(TAG, "points new: " + point.x + " " + point.y);
                 }
             }
 
@@ -693,12 +783,14 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         for (HistoryPath historyPath : mCanceledPaths) {
 
             if (historyPath.isPoint()) {
-                historyPath.setOriginX(historyPath.getOriginX() * xMultiplyFactor);
-                historyPath.setOriginY(historyPath.getOriginY() * yMultiplyFactor);
+                historyPath.setOriginX(historyPath.getOriginX() * xMultiplyFactor + xCenter);
+                historyPath.setOriginY(historyPath.getOriginY() * yMultiplyFactor + yCenter);
             } else {
                 for (Point point : historyPath.getPoints()) {
                     point.x *= xMultiplyFactor;
+                    point.x += xCenter;
                     point.y *= yMultiplyFactor;
+                    point.y += yCenter;
                 }
             }
 
@@ -707,8 +799,11 @@ public class FreeDrawView extends View implements View.OnTouchListener {
 
         // Adapt drawn points
         for (Point point : mPoints) {
+            Log.e("SHASHPASH", "multiplyPathsAndPoints: " + point.x + " " + point.y);
             point.x *= xMultiplyFactor;
+            point.x += xCenter;
             point.y *= yMultiplyFactor;
+            point.y += yCenter;
         }
     }
 
