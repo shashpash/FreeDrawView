@@ -30,7 +30,7 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     private static final float DEFAULT_STROKE_WIDTH = 4;
     private static final int DEFAULT_COLOR = Color.BLACK;
     private static final int DEFAULT_ALPHA = 255;
-    //    float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE, minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+
     private Paint mCurrentPaint;
     private Path mCurrentPath;
     private ResizeBehaviour mResizeBehaviour;
@@ -617,7 +617,7 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.e(TAG, "onSizeChanged: " + w + " " + h + " " + oldw + " " + oldh);
+        Log.e(TAG, "onSizeChanged: " + w + " " + h + " " + mLastDimensionW + " " + mLastDimensionH);
         float xMultiplyFactor = 1;
         float yMultiplyFactor = 1;
 
@@ -641,8 +641,8 @@ public class FreeDrawView extends View implements View.OnTouchListener {
 //                xMultiplyFactor = yMultiplyFactor = (float) h / mLastDimensionH / 2;
 //            }
 //        }
-        int xCenter = 0;
-        int yCenter = 0;
+
+
 //        minX += 6;
 //        minY +=6;
 //        searchMinMaxXY();
@@ -657,21 +657,51 @@ public class FreeDrawView extends View implements View.OnTouchListener {
 
         yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? xMultiplyFactor : yMultiplyFactor;
 
+        int[] ints = searchMinMaxXY();
+        float xCenter = 0;
+//        if (w > ints[0] - xMultiplyFactor) {
+//            xCenter = (w - ints[0] * xMultiplyFactor) / 2;
+//        }
+        float yCenter = 0;
+//        if(h > ints[1] * yMultiplyFactor) {
+//            yCenter=(h - ints[1] * yMultiplyFactor) / 2;
+//        }
+
 //            if (w < mLastDimensionH || h < mLastDimensionH)
 //                yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? yMultiplyFactor : xMultiplyFactor;
 //            else
 //                yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? xMultiplyFactor : yMultiplyFactor;
 
-        if (mLastDimensionW < w) {
-            xCenter = (w - mLastDimensionW) / 2;
-        }
 
-        if (mLastDimensionH < h) {
-            yCenter = (h - mLastDimensionH) / 2;
-        } /*else {
+//        if (mLastDimensionH < w) {
+//            xCenter = (w - mLastDimensionH) / 2;
+//        }
+//
+//        Log.e("SHASHPASH", "onSizeChanged: " + mLastDimensionH + " " + h);
+//        if (mLastDimensionW < h) {
+//            yCenter = (h / 2 - mLastDimensionW / 2);
+//        }
+        /*else {
             yCenter = (mLastDimensionH - h) / 2;
-        }
-*/
+        }*/
+
+
+//        if (mLastDimensionW < w) {
+//            xCenter = (int) ((w - mLastDimensionW) / 2 );
+//            Log.e("SHASHPASH", "FIRST W " + xCenter);
+//        } else {
+//            // xCenter = (int) ((mLastDimensionW - w) / 2 );
+//            Log.e("SHASHPASH", "SECOND W " + xCenter);
+//        }
+//
+//        Log.e("SHASHPASH", "onSizeChanged: " + mLastDimensionH + " " + h);
+//        if (mLastDimensionH < h) {
+//            yCenter = (int) ((h - mLastDimensionH) / 2 / yMultiplyFactor);
+//            Log.e("SHASHPASH", "FIRST H " + yCenter);
+//        } else {
+//            yCenter = (int) ((mLastDimensionH - h) / 2 / yMultiplyFactor);
+//            Log.e("SHASHPASH", "SECOND H " + yCenter);
+//        }
 //        }
 
 
@@ -681,52 +711,58 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         multiplyPathsAndPoints(xMultiplyFactor, yMultiplyFactor, xCenter, yCenter);
     }
 
-//    private void searchMinMaxXY() {
-//
-//        for (HistoryPath historyPath : mPaths) {
-//            if (historyPath.isPoint()) {
-//                if (historyPath.getOriginY() > maxY) {
-//                    maxY = historyPath.getOriginY();
-//                }
-//
-//                if (historyPath.getOriginY() < minY) {
-//                    minY = historyPath.getOriginY();
-//                }
-//
-//                if (historyPath.getOriginX() > maxX) {
-//                    maxX = historyPath.getOriginX();
-//                }
-//
-//                if (historyPath.getOriginX() < minX) {
-//                    minX = historyPath.getOriginX();
-//                }
-//            } else {
-//                for (Point point : historyPath.getPoints()) {
-//                    if (point.y > maxY) {
-//                        maxY = point.y;
-//                    }
-//
-//                    if (point.y < minY) {
-//                        minY = point.y;
-//                    }
-//
-//                    if (point.x > maxX) {
-//                        maxX = point.x;
-//                    }
-//
-//                    if (point.x < minX) {
-//                        minX = point.x;
-//                    }
-//                }
-//            }
-//        }
-//
-//        Log.e(TAG, "searchMinMaxXY: " + (maxX - minX) + " " + (maxY - minY));
-//    }
+    private int[] searchMinMaxXY() {
+        float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE, minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+        for (HistoryPath historyPath : mPaths) {
+            if (historyPath.isPoint()) {
+                if (historyPath.getOriginY() > maxY) {
+                    maxY = historyPath.getOriginY();
+                }
+
+                if (historyPath.getOriginY() < minY) {
+                    minY = historyPath.getOriginY();
+                }
+
+                if (historyPath.getOriginX() > maxX) {
+                    maxX = historyPath.getOriginX();
+                }
+
+                if (historyPath.getOriginX() < minX) {
+                    minX = historyPath.getOriginX();
+                }
+            } else {
+                for (Point point : historyPath.getPoints()) {
+                    if (point.y > maxY) {
+                        maxY = point.y;
+                    }
+
+                    if (point.y < minY) {
+                        minY = point.y;
+                    }
+
+                    if (point.x > maxX) {
+                        maxX = point.x;
+                    }
+
+                    if (point.x < minX) {
+                        minX = point.x;
+                    }
+                }
+            }
+        }
+
+        Log.e(TAG, "searchMinMaxXY: " + (maxX - minX) + " " + (maxY - minY));
+
+        return new int[]
+                {
+                        (int) (maxX - minX) - 1,
+                        (int) (maxY - minY) - 1
+                };
+    }
 
     // Translate all the paths, used every time that this view size is changed
     @SuppressWarnings("SuspiciousNameCombination")
-    private void multiplyPathsAndPoints(float xMultiplyFactor, float yMultiplyFactor, int xCenter, int yCenter) {
+    private void multiplyPathsAndPoints(float xMultiplyFactor, float yMultiplyFactor, float xCenter, float yCenter) {
         Log.e(TAG, "multiplyPathsAndPoints: " + xMultiplyFactor + " " + yMultiplyFactor);
         // If both factors == 1 or <= 0 or no paths/points to apply things, just return
         if (/*(xMultiplyFactor == 1 && yMultiplyFactor == 1)
