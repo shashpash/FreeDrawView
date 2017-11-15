@@ -657,15 +657,21 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         float xCenter = 0;
         float yCenter = 0;
 
-
-        if (w > mLastDimensionW)
-            xCenter = (w - mLastDimensionW);
-
-        if (h > mLastDimensionH)
-            yCenter = (h - mLastDimensionH);
-
-
         yMultiplyFactor = xMultiplyFactor = yMultiplyFactor > xMultiplyFactor ? xMultiplyFactor : yMultiplyFactor;
+
+        if (mLastDimensionW != w) {
+            mLastDimensionW *= xMultiplyFactor;
+        }
+        if (w > mLastDimensionW) {
+            xCenter = (w - mLastDimensionW) / 2;
+        }
+
+        if (mLastDimensionH != h) {
+            mLastDimensionH *= yMultiplyFactor;
+        }
+        if (h > mLastDimensionH) {
+            yCenter = (h - mLastDimensionH) / 2;
+        }
 
 //        int[] ints = searchMinMaxXY();
 //        if (w > ints[0] - xMultiplyFactor) {
