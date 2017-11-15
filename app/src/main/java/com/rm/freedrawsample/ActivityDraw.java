@@ -1,9 +1,14 @@
 package com.rm.freedrawsample;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.transition.TransitionManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +25,12 @@ import com.rm.freedrawview.FreeDrawView;
 import com.rm.freedrawview.PathDrawnListener;
 import com.rm.freedrawview.PathRedoUndoCountChangeListener;
 import com.rm.freedrawview.ResizeBehaviour;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
+import static java.lang.System.out;
 
 public class ActivityDraw extends AppCompatActivity
         implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,
@@ -63,7 +74,7 @@ public class ActivityDraw extends AppCompatActivity
         mFreeDrawView = (FreeDrawView) findViewById(R.id.free_draw_view);
         mFreeDrawView.setOnPathDrawnListener(this);
         mFreeDrawView.setPathRedoUndoCountChangeListener(this);
-        mFreeDrawView.setResizeBehaviour(ResizeBehaviour.FIT_XY);
+        mFreeDrawView.setResizeBehaviour(ResizeBehaviour.SAVE_AR);
 
         mSideView = findViewById(R.id.side_view);
         mBtnRandomColor = (Button) findViewById(R.id.btn_color);
@@ -157,7 +168,7 @@ public class ActivityDraw extends AppCompatActivity
         }
 
         if (item.getItemId() == R.id.menu_github) {
-            IntentHelper.openUrl(this, getString(R.string.github_url));
+            takeAndShowScreenshot();
         }
 
         return super.onOptionsItemSelected(item);
@@ -274,8 +285,10 @@ public class ActivityDraw extends AppCompatActivity
 
 
     // DrawCreatorListener
+    @SuppressLint("SdCardPath")
     @Override
     public void onDrawCreated(Bitmap draw) {
+        Log.e(TAG, "onDrawCreated: ");
         mSideView.setVisibility(View.GONE);
         mFreeDrawView.setVisibility(View.GONE);
 
@@ -285,6 +298,32 @@ public class ActivityDraw extends AppCompatActivity
         mImgScreen.setVisibility(View.VISIBLE);
 
         mImgScreen.setImageBitmap(draw);
+
+        requestPerms();
+
+
+        String file_path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File dir = new File(file_path);
+        if(!dir.exists())
+            dir.mkdirs();
+        File file = new File(dir, "test.png");
+        try {
+            FileOutputStream fOut = new FileOutputStream(file);
+            draw.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+    }
+
+    private void requestPerms(){
+        String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            requestPermissions(permissions,1);
+        }
     }
 
     @Override

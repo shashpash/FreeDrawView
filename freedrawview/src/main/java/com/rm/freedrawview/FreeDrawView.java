@@ -497,7 +497,8 @@ public class FreeDrawView extends View implements View.OnTouchListener {
                     resizeBehaviour == 0 ? ResizeBehaviour.CLEAR :
                             resizeBehaviour == 1 ? ResizeBehaviour.FIT_XY :
                                     resizeBehaviour == 2 ? ResizeBehaviour.CROP :
-                                            ResizeBehaviour.CROP;
+                                            resizeBehaviour == 3 ? ResizeBehaviour.SAVE_AR :
+                                                    ResizeBehaviour.SAVE_AR;
         }
     }
 
@@ -633,6 +634,25 @@ public class FreeDrawView extends View implements View.OnTouchListener {
             mLastDimensionH = h;
         }
 
+        if (mResizeBehaviour == ResizeBehaviour.SAVE_AR) {
+            saveAspectRatio(w, h, xMultiplyFactor, yMultiplyFactor);
+
+        } else {
+            if (w >= 0 && w != oldw && w != mLastDimensionW) {
+                xMultiplyFactor = (float) w / mLastDimensionW;
+                mLastDimensionW = w;
+            }
+
+            if (h >= 0 && h != oldh && h != mLastDimensionH) {
+                yMultiplyFactor = (float) h / mLastDimensionH;
+                mLastDimensionH = h;
+            }
+
+            multiplyPathsAndPoints(xMultiplyFactor, yMultiplyFactor, 0, 0);
+        }
+    }
+
+    private void saveAspectRatio(int w, int h, float xMultiplyFactor, float yMultiplyFactor) {
         if (w != mLastDimensionW) {
             xMultiplyFactor = (float) w / (mLastDimensionW);
         }

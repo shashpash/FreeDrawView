@@ -14,5 +14,6 @@ package com.rm.freedrawview;
 public enum ResizeBehaviour {
     CLEAR,
     FIT_XY,
-    CROP
+    CROP,
+    SAVE_AR
 }
