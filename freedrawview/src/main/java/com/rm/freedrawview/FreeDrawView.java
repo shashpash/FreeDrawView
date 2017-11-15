@@ -14,7 +14,6 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -688,7 +687,6 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     // Translate all the paths, used every time that this view size is changed
     @SuppressWarnings("SuspiciousNameCombination")
     private void multiplyPathsAndPoints(float xMultiplyFactor, float yMultiplyFactor, float xCenter, float yCenter) {
-        Log.e(TAG, "multiplyPathsAndPoints: " + xMultiplyFactor + " " + yMultiplyFactor);
         // If both factors == 1 or <= 0 or no paths/points to apply things, just return
         if (/*(xMultiplyFactor == 1 && yMultiplyFactor == 1)
                 ||*/ (xMultiplyFactor <= 0 || yMultiplyFactor <= 0) ||
