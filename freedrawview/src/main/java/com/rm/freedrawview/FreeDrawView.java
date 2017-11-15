@@ -620,6 +620,9 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         Log.e(TAG, "onSizeChanged: " + w + " " + h + " " + mLastDimensionW + " " + mLastDimensionH);
         float xMultiplyFactor = 1;
         float yMultiplyFactor = 1;
+        if (mLastDimensionH == h && mLastDimensionW == w) {
+            return;
+        }
 
 
         Log.e(TAG, "DIM: " + mLastDimensionW + " " + mLastDimensionH);
