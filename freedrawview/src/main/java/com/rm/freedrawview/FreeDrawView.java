@@ -14,6 +14,7 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -634,6 +635,7 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         }
 
         if (mResizeBehaviour == ResizeBehaviour.SAVE_AR) {
+
             saveAspectRatio(w, h, xMultiplyFactor, yMultiplyFactor);
 
         } else {
@@ -651,12 +653,131 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         }
     }
 
+    private void fun(float differenceX, float differenceY) {
+        for (HistoryPath historyPath : mPaths) {
+            if (historyPath.isPoint()) {
+                historyPath.setOriginX(historyPath.getOriginX() - differenceX);
+                historyPath.setOriginY(historyPath.getOriginY() - differenceY);
+            } else {
+                for (Point point : historyPath.getPoints()) {
+                    point.x -= differenceX;
+                    point.y -= differenceY;
+                }
+            }
+        }
+
+        for (HistoryPath historyPath : mCanceledPaths) {
+            if (historyPath.isPoint()) {
+                historyPath.setOriginX(historyPath.getOriginX() - differenceX);
+                historyPath.setOriginY(historyPath.getOriginY() - differenceY);
+            } else {
+                for (Point point : historyPath.getPoints()) {
+                    point.x -= differenceX;
+                    point.y -= differenceY;
+                }
+            }
+        }
+    }
+
+    private float[] searchMinMaxXY() {
+        float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE, minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+        for (HistoryPath historyPath : mPaths) {
+            if (historyPath.isPoint()) {
+                if (historyPath.getOriginY() > maxY) {
+                    maxY = historyPath.getOriginY();
+                }
+
+                if (historyPath.getOriginY() < minY) {
+                    minY = historyPath.getOriginY();
+                }
+
+                if (historyPath.getOriginX() > maxX) {
+                    maxX = historyPath.getOriginX();
+                }
+
+                if (historyPath.getOriginX() < minX) {
+                    minX = historyPath.getOriginX();
+                }
+            } else {
+                for (Point point : historyPath.getPoints()) {
+                    if (point.y > maxY) {
+                        maxY = point.y;
+                    }
+
+                    if (point.y < minY) {
+                        minY = point.y;
+                    }
+
+                    if (point.x > maxX) {
+                        maxX = point.x;
+                    }
+
+                    if (point.x < minX) {
+                        minX = point.x;
+                    }
+                }
+            }
+        }
+
+        for (HistoryPath historyPath : mCanceledPaths) {
+            if (historyPath.isPoint()) {
+                if (historyPath.getOriginY() > maxY) {
+                    maxY = historyPath.getOriginY();
+                }
+
+                if (historyPath.getOriginY() < minY) {
+                    minY = historyPath.getOriginY();
+                }
+
+                if (historyPath.getOriginX() > maxX) {
+                    maxX = historyPath.getOriginX();
+                }
+
+                if (historyPath.getOriginX() < minX) {
+                    minX = historyPath.getOriginX();
+                }
+            } else {
+                for (Point point : historyPath.getPoints()) {
+                    if (point.y > maxY) {
+                        maxY = point.y;
+                    }
+
+                    if (point.y < minY) {
+                        minY = point.y;
+                    }
+
+                    if (point.x > maxX) {
+                        maxX = point.x;
+                    }
+
+                    if (point.x < minX) {
+                        minX = point.x;
+                    }
+                }
+            }
+        }
+
+        Log.e(TAG, "searchMinMaxXY: " + (maxX - minX) + " " + (maxY - minY));
+
+        return new float[]
+                {
+                        minX, maxX,
+                        minY, maxY
+                };
+    }
+
     private void saveAspectRatio(int w, int h, float xMultiplyFactor, float yMultiplyFactor) {
-        if (w != mLastDimensionW) {
+
+        float[] ints = searchMinMaxXY();
+        fun(ints[0] - 20, ints[2] - 20);
+        mLastDimensionW = (int) (ints[1] - ints[0]) + 40;
+        mLastDimensionH = (int) (ints[3] - ints[2]) + 40;
+
+        if (w != mLastDimensionW && w < mLastDimensionW) {
             xMultiplyFactor = (float) w / (mLastDimensionW);
         }
 
-        if (h != (mLastDimensionH)) {
+        if (h != (mLastDimensionH) && h < mLastDimensionH) {
             yMultiplyFactor = (float) h / (mLastDimensionH);
         }
         float xCenter = 0;
