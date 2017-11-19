@@ -762,14 +762,16 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         return new float[]
                 {
                         minX, maxX,
-                        minY, maxY
+                        minY, maxY,
                 };
     }
 
     private void saveAspectRatio(int w, int h, float xMultiplyFactor, float yMultiplyFactor) {
-
         float[] ints = searchMinMaxXY();
+        float freeSpace0X = ints[0], freeSpace1X = mLastDimensionW - ints[1],
+                freeSpace0Y = ints[2], freeSpace1Y = mLastDimensionH - ints[3];
         fun(ints[0] - 20, ints[2] - 20);
+        float FINALmLastDimensionW = mLastDimensionW, FINALmLastDimensionH = mLastDimensionH;
         mLastDimensionW = (int) (ints[1] - ints[0]) + 40;
         mLastDimensionH = (int) (ints[3] - ints[2]) + 40;
 
@@ -789,15 +791,24 @@ public class FreeDrawView extends View implements View.OnTouchListener {
             mLastDimensionW *= xMultiplyFactor;
         }
         if (w > mLastDimensionW) {
-            xCenter = (w - mLastDimensionW) / 2;
+            xCenter = freeSpace0X * (w - mLastDimensionW) / (freeSpace0X + freeSpace1X);
+//            xCenter = (freeSpace0X / FINALmLastDimensionW) * w;
         }
+
+
 
         if (mLastDimensionH != h) {
             mLastDimensionH *= yMultiplyFactor;
         }
         if (h > mLastDimensionH) {
-            yCenter = (h - mLastDimensionH) / 2;
+            yCenter = freeSpace0Y * (h - mLastDimensionH) / (freeSpace0Y + freeSpace1Y);
         }
+
+        Log.e(TAG, "saveAspectRatio: " +(w - mLastDimensionW) / (freeSpace0X + freeSpace1X) );
+        Log.e(TAG, "saveAspectRatio: " +(h - mLastDimensionH) / (freeSpace0Y + freeSpace1Y) );
+
+
+
 
         mLastDimensionW = w;
         mLastDimensionH = h;
