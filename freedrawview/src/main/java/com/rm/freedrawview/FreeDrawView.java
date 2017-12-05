@@ -750,8 +750,6 @@ public class FreeDrawView extends View implements View.OnTouchListener {
 
     public interface DrawCreatorListener {
         void onDrawCreated(Bitmap draw);
-
-        void onDrawCreationError();
     }
 
 
@@ -790,10 +788,6 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-
-            if (mListener != null) {
-                mListener.onDrawCreationError();
-            }
         }
 
         @Override

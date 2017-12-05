@@ -18,7 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.rm.freedrawview.FreeDrawSerializableState;
 import com.rm.freedrawview.FreeDrawView;
@@ -324,10 +323,5 @@ public class ActivityDraw extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             requestPermissions(permissions,1);
         }
-    }
-
-    @Override
-    public void onDrawCreationError() {
-        Toast.makeText(this, "Error, cannot create bitmap", Toast.LENGTH_SHORT).show();
     }
 }
