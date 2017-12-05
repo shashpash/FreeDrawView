@@ -14,7 +14,6 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -901,7 +900,6 @@ public class FreeDrawView extends View implements View.OnTouchListener {
                 e.printStackTrace();
                 cancel(true);
             }
-
             return null;
         }
 
