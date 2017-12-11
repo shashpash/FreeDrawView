@@ -323,6 +323,15 @@ public class FreeDrawView extends View implements View.OnTouchListener {
     }
 
     /**
+     * Check image is empty
+     *
+     * @return Image availability
+     */
+    public boolean isBitmapClear() {
+        return mPaths.size() == 0;
+    }
+
+    /**
      * Set a path drawn listener, will be called every time a new path is drawn
      */
     public void setOnPathDrawnListener(PathDrawnListener listener) {
@@ -767,9 +776,11 @@ public class FreeDrawView extends View implements View.OnTouchListener {
         float[] ints = searchMinMaxXY();
         float freeSpace0X = ints[0], freeSpace1X = mLastDimensionW - ints[1],
                 freeSpace0Y = ints[2], freeSpace1Y = mLastDimensionH - ints[3];
-        fun(ints[0] - 20, ints[2] - 20);
-        mLastDimensionW = (int) (ints[1] - ints[0]) + 40;
-        mLastDimensionH = (int) (ints[3] - ints[2]) + 40;
+        if (freeSpace0X == 0) freeSpace0X += 8;
+        if (freeSpace0Y == 0) freeSpace0Y += 8;
+        fun(ints[0] - 10, ints[2] - 10);
+        mLastDimensionW = (int) (ints[1] - ints[0]) + 20;
+        mLastDimensionH = (int) (ints[3] - ints[2]) + 20;
 
         if (w != mLastDimensionW && w < mLastDimensionW) {
             xMultiplyFactor = (float) w / (mLastDimensionW);
